@@ -11,7 +11,7 @@ public class SinglyList<T> {
         this.head = new Node<>();
     }
 
-    //提供深拷贝方法
+    //提供 深拷贝方法
     public SinglyList(SinglyList list) {
         this();
         Node<T> rear = this.head;
@@ -240,12 +240,21 @@ public class SinglyList<T> {
 
     //	//集合差，this-=list
     public SinglyList<T> removeAll(SinglyList<T> list) {
-        for (Node<T> node = this.head.next; node != null; node = node.next) {
+        for (Node<T> node = this.head.next,rear = this.head; node != null&& rear !=null; ) {
             for (Node<T> node1 = list.head.next; node1 != null; node1 = node1.next) {
                 if (node.data.equals(node1.data)) {
-                    this.remove(node.data);
+//                    this.remove(node.data);
+                    //尾节点
+                    if (node.next == null){
+                        rear.next = null;
+                        return this;
+                    }
+                    node = node.next;
+                    rear.next = node.next.next;
+                    continue;
                 }
             }
+            rear = rear.next;
         }
         return this;
     }
@@ -349,7 +358,8 @@ public class SinglyList<T> {
         SinglyList list2 = new SinglyList(integers);
 
 
-//        System.out.println("removeAll" + list.removeAll(list1));
+        System.out.println("removeAll" + list.removeAll(list1));
+
 ////        equals
 //        System.out.println("equals" + list.equals(list1));
 //

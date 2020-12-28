@@ -1,10 +1,29 @@
 package SecondChar;
 
-public class SeqList<T> extends Object {
+public class SeqList<T> {
     protected int n;
     protected Object[] element;
     private static final int MIN_NUM = 16;
 
+    public SeqList(SeqList list) {
+        this.copy(list);
+    }
+
+    public void copy(SeqList<? extends T> list)  // 复制list所有元素到this，放弃this原数组元素。O(n)
+    {
+        this.element = new Object[list.element.length];// 申请一个数组
+        for (int i = 0; i < list.n; i++)              // 复制list所有元素到this
+            this.element[i] = list.element[i];   // 对象引用赋值，没有创建新对象
+        this.n = list.n;
+    }
+
+    //以下语法错，不能拷贝对象。
+//this.element[i] = new T(list.element[i]);      //语法错，因为Java没有提供默认拷贝构造方法
+//this.element[i] = new Object(list.element[i]); //语义错，不需要创建Object对象。
+    //语法错，Object没有提供拷贝构造方法，构造方法不能继承
+    //将对象赋值改进成以下语句，失败。
+//    this.insert((T)list.element[i]);           //尾插入，this.n++，对象仍然引用赋值，没有复制
+//因为，子类SortedSeqList(SeqList<? extends T> list)中super(list)，insert(x)运行时多态，遍历到尾再插入，效率O(n*n)
     public SeqList(int length) {
         if (length < MIN_NUM) {
             length = MIN_NUM;
@@ -25,7 +44,6 @@ public class SeqList<T> extends Object {
                 this.element[this.n++] = values[i];
             }
         }
-
     }
 
     //使得该数据结构为空
@@ -38,7 +56,7 @@ public class SeqList<T> extends Object {
     }
 
     public T get(int i) {
-        if (i > 0 && i < n) {
+        if (i >= 0 && i <= n) {
             return (T) this.element[i];
         }
         return null;
@@ -72,10 +90,11 @@ public class SeqList<T> extends Object {
         if (i < 0) {
             i = 0;
         }
-        if (i > 0) {
+        if (i > n) {
             i = this.n;
         }
 
+//        System.out.println(this.element == null);
         Object[] source = this.element;
         //扩容
         if (this.n == this.element.length) {
@@ -95,7 +114,7 @@ public class SeqList<T> extends Object {
     }
 
     public int insert(T x) {
-        return insert(this.n, x);
+        return insert(this.n - 1, x);
     }
 
     public T remove(int i) {
@@ -129,8 +148,4 @@ public class SeqList<T> extends Object {
         return this.remove(this.search(key));
     }
 
-    public static void main(String[] args) {
-
-
-    }
 }

@@ -46,8 +46,9 @@ public final class MyString implements Comparable<MyString>, Serializable {
 
     @Override
     public int compareTo(MyString s) {
-        for (int i = 0; i < this.value.length; i++) {
-            if (this.value[i] != s.value.length) {
+
+        for (int i = 0; i < this.value.length && i < s.value.length; i++) {
+            if (this.value[i] != s.value[i]) {
                 //回到第一个字串不同的地方
                 return this.value[i] - s.value[i];
             }
@@ -136,21 +137,61 @@ public final class MyString implements Comparable<MyString>, Serializable {
     }
 
     //判断前缀子串
-    public boolean startsWith(MyString prefix){
-        if (prefix.value.length > this.value.length){
+    public boolean startsWith(MyString prefix) {
+        if (prefix.value.length > this.value.length) {
             return false;
         }
-        for (int i =0;i<prefix.value.length;i++){
-            if (prefix.value[i] != this.value[i]){
+        for (int i = 0; i < prefix.value.length; i++) {
+            if (prefix.value[i] != this.value[i]) {
                 return false;
             }
         }
         return true;
     }
 
+    public int indexOf(MyString pattern) {
+        return this.indexOf(pattern, 0);
+    }
+
+    //从
+    public int indexOf(MyString pattern, int begin) {
+        if (begin < 0 || begin > this.value.length) {
+            begin = 0;
+        }
+        int n = this.value.length, m = pattern.length();
+        if (n == 0 || n < m || begin > n) {
+            return -1;
+        }
+
+        int i = begin, j = 0;
+        while (i < n && j < m) {
+            if (this.charAt(i) == pattern.charAt(j)) {
+                i++;
+                j++;
+            }
+            //目标串回溯，j成为0，i++
+            else {
+                i = i - j + 1;
+                j = 0;
+                //重点！如果剩余字串不够就不比较了！
+                if (i > n - m) {
+                    break;
+                }
+            }
+        }
+        //匹配成功，返回匹配子串序号
+        return j == m ? i - m : -1;
+
+    }
 
     public static void main(String[] args) {
         MyString string = new MyString(new String("a b c"));
+        //去除空格
         System.out.println(string.trim());
+        //大写
+        System.out.println(string.toUpperCase());
+        //小写
+        MyString string1 = new MyString(new String("A B C "));
+        System.out.println(string1.toUpperCase());
     }
 }
