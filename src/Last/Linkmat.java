@@ -36,7 +36,6 @@ public class Linkmat<T> {
 
     public void delete(Triple triple) {
         //测试，如果不用list直接做
-        //……出bug了
         DoubleNode<Triple> find_out = this.vertexs[triple.row].head.next;
         //删除头节点
         if (find_out.data.equals(triple)) {
@@ -72,6 +71,11 @@ public class Linkmat<T> {
         }
     }
 
+    //删除某个点
+    public void delete(int i ){
+        //和有向图类似，遍历两遍
+
+    }
     public void insert(Triple triple) {
         DoubleNode<Triple> node = new DoubleNode<Triple>(triple);
         DoubleNode<Triple> find_before = this.list.get(triple.row).head.next;
@@ -105,12 +109,6 @@ public class Linkmat<T> {
 
     //这个是具体的插入函数
     private void insert_test(DoubleNode<Triple> find, Triple triple, DoubleNode<Triple> node) {
-        //头插入，没有也行
-//        if (triple.row == find.data.row && triple.column < find.data.column) {
-//            node.next = find;
-//            find = node;
-//        }
-
         //寻找匹配的
         if (find.data.row < triple.row) {
             while (find.down != null && find.data.row < triple.row) {

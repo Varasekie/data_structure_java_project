@@ -6,7 +6,8 @@ public class DirectedLinkedMat extends AbstractGraph {
     //入边和出边
     Vertex<Triple>[] in, out;
 
-    int m =-1;
+    int m = -1;
+
     public DirectedLinkedMat() {
         this(0);
     }
@@ -28,33 +29,38 @@ public class DirectedLinkedMat extends AbstractGraph {
         //如果要删除头节点，直接找出边入边，然后
         DoubleNode<Triple> find_out = this.out[triple.row].head.next;
 
-        //反正按道理肯定是能找到的，找不到就是它的问题了
         //删除next
-        if (find_out.data.row == triple.row && find_out.data.column == triple.column) {
-            this.out[triple.row].head.next = this.out[triple.row].head.next.next;
-        }
-        while (find_out.next != null) {
+        if (find_out != null) {
             if (find_out.data.row == triple.row && find_out.data.column == triple.column) {
-                //新增往下指
-                if (find_out.next.next == null && find_out.next.down != null) {
-                    this.in[triple.column].head.next = find_out.next.down;
-                } else find_out.next = find_out.next.next;
-                break;
+                this.out[triple.row].head.next = this.out[triple.row].head.next.next;
             }
-            find_out = find_out.next;
+
+            while (find_out.next != null) {
+                if (find_out.data.row == triple.row && find_out.data.column == triple.column) {
+                    //新增往下指
+                    if (find_out.next.next == null && find_out.next.down != null) {
+                        this.in[triple.column].head.next = find_out.next.down;
+                    } else find_out.next = find_out.next.next;
+                    break;
+                }
+                find_out = find_out.next;
+            }
         }
 
         //删除down
         //这里是需要管down的，因为这里向下的肯定是相同的入边，down是继承的
         DoubleNode<Triple> find_in = this.in[triple.column].head.next;
-        if (find_in.data.row == triple.row && find_in.data.column == triple.column) {
-            this.in[triple.column].head.next = find_in.down;
-        }
-        while (find_in.down != null) {
+        if (find_in!=null){
             if (find_in.data.row == triple.row && find_in.data.column == triple.column) {
-                find_in.down = find_in.down.down;
+                this.in[triple.column].head.next = find_in.down;
             }
-            find_in = find_in.down;
+            find_in = this.in[triple.column].head.next;
+            while (find_in!= null && find_in.down != null) {
+                if (find_in.data.row == triple.row && find_in.data.column == triple.column) {
+                    find_in.down = find_in.down.down;
+                }
+                find_in = find_in.down;
+            }
         }
     }
 
@@ -106,30 +112,27 @@ public class DirectedLinkedMat extends AbstractGraph {
     }
 
     public void delete_test(int i) {
-        SeqQueue<DoubleNode<Triple>> queue = new SeqQueue<DoubleNode<Triple>>();
-        //先入栈，down和next
-        for (Vertex<Triple> tripleVertex : in) {
-            if (tripleVertex.head.next == null) {
-                continue;
+        //先判断出边，就是row
+        DoubleNode<Triple> find_out = this.out[i].head.next;
+        DoubleNode<Triple> front = this.out[i].head;
+
+        if (find_out != null) {
+            while (find_out.next != null) {
+                if (find_out.next.data.row == i || find_out.next.data.column == i){
+                    find_out.next = find_out.next.next;
+                }
+                find_out = find_out.next;
             }
-            queue.add(tripleVertex.head.next);
+        }
 
-            while (!queue.isEmpty()) {
-                if (queue.peek().data.row != i && queue.peek().data.column != i) {
-                    System.out.println(queue.peek());
+        //判断入边
+        DoubleNode<Triple> find_in = this.in[i].head.next;
+        if (find_in != null) {
+            while (find_in.down != null) {
+                if (find_in.down.data.row == i || find_in.down.data.column == i){
+                    find_in.down = find_in.down.down;
                 }
-                //next入栈
-                if (queue.peek().next != null && !queue.peek().next.visited) {
-                    queue.add(queue.peek().next);
-                    queue.peek().next.visited = true;
-
-                }
-                //down入栈
-                if (queue.peek().down != null && !queue.peek().down.visited) {
-                    queue.add(queue.peek().down);
-                    queue.peek().down.visited = true;
-                }
-                queue.poll();
+                find_in = find_in.down;
             }
         }
     }
@@ -157,8 +160,6 @@ public class DirectedLinkedMat extends AbstractGraph {
             }
             find_in.down = node;
         }
-
-
     }
 
     //广度优先
@@ -207,13 +208,14 @@ public class DirectedLinkedMat extends AbstractGraph {
         //默认从A开始遍历
         SeqQueue<DoubleNode<Triple>> queue = new SeqQueue<DoubleNode<Triple>>();
         //先入栈，down和next
-        queue.add(this.in[i].head.next);
+        queue.add(this.out[i].head.next);
 //        this.in[i].head.next.visited = true;
 //        System.out.println(queue.peek());;
         while (!queue.isEmpty()) {
-            if (m != -1){
-                if (queue.peek().data.row != m || queue.peek().data.column != m) {
-                    System.out.println(queue.peek());
+            if (m != -1) {
+                if (queue.peek().data.row != m && queue.peek().data.column != m) {
+//                    System.out.println(queue.peek());
+                    str.append(queue.peek().data.toString());
 //                continue;
                 }
             }
@@ -230,12 +232,11 @@ public class DirectedLinkedMat extends AbstractGraph {
             str.append(queue.peek().data.toString());
             queue.poll();
         }
-        this.BFS_reverse();
+//        this.BFS_reverse();
         return str.toString();
     }
 
     public String toString() {
-
         return strings(m);
     }
 
@@ -322,11 +323,15 @@ public class DirectedLinkedMat extends AbstractGraph {
             }
         }
 
-        System.out.print(this.get(i) + "的单源最短路径：");
+        System.out.println(this.get(i) + "的单源最短路径：");
         for (int j = 0; j < n; j++)                   //输出顶点vi的单源最短路径
-            if (j != i)
-                System.out.print(toPath(path, i, j) + "长度" + (dist[j] == MAXWEIGHT ? "∞" : dist[j]) + "，");
-        System.out.println();
+            if (j != i){
+                System.out.print(j+"的距离为");
+                System.out.println((dist[j] == MAXWEIGHT ? "∞" : dist[j]) + "，");
+                System.out.println();
+
+            }
+//                System.out.print(toPath(path, i, j) + "长度" + (dist[j] == MAXWEIGHT ? "∞" : dist[j]) + "，");
     }
 
     public DoubleNode<Triple> get(int i)                          //返回顶点vi元素；若i越界，则返回null
@@ -375,7 +380,7 @@ public class DirectedLinkedMat extends AbstractGraph {
         link.insert(this.get(j));                //单链表插入最短路径终点vj
         for (int k = path[j]; k != i && k != j && k != -1; k = path[k])
             link.insert(0, this.get(k));         //单链表头插入经过的顶点，反序
-        link.insert(0, this.get(i));             //最短路径的起点vi
+//        link.insert(0, this.get(i));             //最短路径的起点vi
         return link.toString();
     }
 
@@ -383,7 +388,6 @@ public class DirectedLinkedMat extends AbstractGraph {
         if (i == j) {
             return 0;
         }
-        int w;
         //然后遍历搜索找节点,BFS
         DoubleNode<Triple> doubleNode = this.search(i, j);
         if (doubleNode != null) {
